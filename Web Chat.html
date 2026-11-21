@@ -1,0 +1,2071 @@
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UzGram — Zamonaviy Messenjer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #e8eef5;
+            --bg-surface: #ffffff;
+            --bg-surface-glass: rgba(255, 255, 255, 0.96);
+            --bg-chat: #eef3f8;
+            --drawer-header: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent: #0ea5e9;
+            --accent-gradient: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            --msg-out: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            --msg-out-text: #ffffff;
+            --msg-in: #ffffff;
+            --msg-in-text: #0f172a;
+            --border-color: rgba(15, 23, 42, 0.08);
+            --hover-bg: rgba(15, 23, 42, 0.04);
+            --active-chat: rgba(14, 165, 233, 0.14);
+            --active-chat-border: #0ea5e9;
+            --shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+            --glass: blur(16px);
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #070b12;
+            --bg-surface: #111827;
+            --bg-surface-glass: rgba(17, 24, 39, 0.96);
+            --bg-chat: #0b111e;
+            --drawer-header: linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #38bdf8 100%);
+            --msg-out: linear-gradient(135deg, #2563eb 0%, #0284c7 100%);
+            --msg-out-text: #ffffff;
+            --msg-in: #1e293b;
+            --msg-in-text: #f1f5f9;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --hover-bg: rgba(255, 255, 255, 0.05);
+            --active-chat: rgba(56, 189, 248, 0.16);
+            --active-chat-border: #38bdf8;
+            --shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 45%),
+                        radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.18), transparent 45%),
+                        var(--bg-main);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* ================= RO'YXATDAN O'TISH EKRANI ================= */
+        .auth-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 20% 20%, #38bdf8 0%, #2563eb 55%, #1e1b4b 100%);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .auth-card {
+            background: var(--bg-surface-glass);
+            backdrop-filter: var(--glass);
+            width: 100%;
+            max-width: 420px;
+            border-radius: 26px;
+            padding: 28px 24px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 13px;
+            border: 1px solid rgba(255,255,255,0.35);
+            animation: fadeIn 0.35s ease;
+            margin: auto;
+        }
+
+        .auth-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            background: var(--accent-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
+        }
+
+        .auth-card h2 {
+            font-size: clamp(20px, 4vw, 23px);
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            text-align: center;
+        }
+
+        .auth-card p {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .auth-avatar-pick {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .auth-avatar-pick img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent);
+            background: var(--hover-bg);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .auth-avatar-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            border: 2px solid var(--bg-surface);
+        }
+
+        /* ================= ASOSIY ILOVA KONTEYNERI ================= */
+        .app-container {
+            width: min(1360px, 100vw);
+            height: min(94vh, 94dvh);
+            background: var(--bg-surface-glass);
+            backdrop-filter: var(--glass);
+            display: none;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ================= YON MENYU (DRAWER) ================= */
+        .drawer-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(3px);
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .drawer-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .tg-drawer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: min(310px, 84vw);
+            height: 100%;
+            background: var(--bg-surface);
+            z-index: 50;
+            transform: translateX(-100%);
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .tg-drawer.open {
+            transform: translateX(0);
+        }
+
+        .drawer-top {
+            background: var(--drawer-header);
+            padding: 24px 20px 18px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .drawer-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .drawer-avatar {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2.5px solid rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .drawer-theme-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .drawer-theme-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .drawer-user-info h3 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .drawer-user-info p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .drawer-menu {
+            flex: 1;
+            padding: 12px 10px;
+            overflow-y: auto;
+        }
+
+        .drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 14px;
+            margin-bottom: 3px;
+            border-radius: 14px;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 14.5px;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+
+        .drawer-item:hover {
+            background: var(--hover-bg);
+            transform: translateX(3px);
+        }
+
+        .drawer-item i {
+            width: 22px;
+            text-align: center;
+            font-size: 16px;
+            color: var(--accent);
+        }
+
+        .drawer-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 8px 10px;
+        }
+
+        /* ================= CHAP SIDEBAR ================= */
+        .sidebar {
+            width: clamp(300px, 31vw, 390px);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+            flex-shrink: 0;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 68px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-wrap {
+            flex: 1;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 9px 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-wrap:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
+        }
+
+        .search-wrap input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            margin-bottom: 4px;
+            border-radius: 16px;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.16s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .chat-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .chat-item.active {
+            background: var(--active-chat);
+            border-left-color: var(--active-chat-border);
+        }
+
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 3px;
+        }
+
+        .chat-name {
+            font-weight: 600;
+            font-size: 14.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-time {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .chat-preview {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ================= ASOSIY CHAT OYNASI ================= */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            height: 100%;
+            background: transparent;
+        }
+
+        .chat-header {
+            padding: 10px 16px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            min-height: 68px;
+            z-index: 5;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .back-mobile-btn {
+            display: none;
+        }
+
+        .icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.18s;
+        }
+
+        .icon-btn:hover {
+            background: var(--hover-bg);
+            color: var(--accent);
+        }
+
+        .chat-user-details {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            cursor: pointer;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .saved-icon-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .online-dot {
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border: 2.5px solid var(--bg-surface);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+
+        .user-status {
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ================= XABARLAR MAYDONI ================= */
+        .messages-container {
+            flex: 1;
+            padding: 18px clamp(12px, 3vw, 28px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: var(--bg-chat);
+            background-image: radial-gradient(var(--border-color) 1.2px, transparent 1.2px);
+            background-size: 22px 22px;
+        }
+
+        .message {
+            max-width: min(72%, 620px);
+            padding: 11px 15px;
+            border-radius: 18px;
+            position: relative;
+            font-size: clamp(14px, 1.05vw, 15px);
+            line-height: 1.45;
+            word-wrap: break-word;
+            animation: fadeIn 0.22s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .message.incoming {
+            align-self: flex-start;
+            background: var(--msg-in);
+            color: var(--msg-in-text);
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .message.outgoing {
+            align-self: flex-end;
+            background: var(--msg-out);
+            color: var(--msg-out-text);
+            border-bottom-right-radius: 5px;
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.22);
+        }
+
+        .message.outgoing .msg-meta {
+            color: rgba(255, 255, 255, 0.82);
+        }
+
+        .message.channel-post {
+            align-self: center;
+            max-width: min(88%, 740px);
+            width: 100%;
+            background: var(--msg-in);
+            color: var(--msg-in-text);
+            border-radius: 18px;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .message.system-notice {
+            align-self: center;
+            background: rgba(100, 116, 139, 0.16);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .sender-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 3px;
+        }
+
+        .msg-meta {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .message video, .message img {
+            max-width: 100%;
+            max-height: 320px;
+            border-radius: 12px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .message audio {
+            width: min(240px, 100%);
+            height: 36px;
+            margin-top: 4px;
+        }
+
+        /* ================= XABAR YOZISH PANELI ================= */
+        .chat-input-area {
+            padding: 10px clamp(10px, 2vw, 18px);
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 9px 14px;
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--accent);
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 15px;
+        }
+
+        .send-btn, .record-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            border: none;
+            background: var(--accent-gradient);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+            transition: transform 0.15s, opacity 0.2s;
+        }
+
+        .send-btn:hover, .record-btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+        }
+
+        .record-btn.recording {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .recording-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: #ef4444;
+            font-weight: 600;
+            font-size: 13.5px;
+            flex: 1;
+            padding-left: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ================= O'NG PROFIL PANELI ================= */
+        .profile-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: min(370px, 100%);
+            height: 100%;
+            background: var(--bg-surface);
+            border-left: 1px solid var(--border-color);
+            transform: translateX(100%);
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .profile-panel.open {
+            transform: translateX(0);
+        }
+
+        .profile-header {
+            padding: 12px 16px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            min-height: 68px;
+        }
+
+        .profile-body {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .profile-large-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent);
+            background: var(--hover-bg);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+
+        .change-photo-btn {
+            font-size: 13px;
+            color: var(--accent);
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            padding: 7px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .profile-field {
+            width: 100%;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 14px;
+        }
+
+        .profile-field label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--accent);
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .profile-field input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 14.5px;
+            outline: none;
+        }
+
+        .save-profile-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 14px;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+            transition: transform 0.15s, opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .save-profile-btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+        }
+
+        .members-section {
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        .members-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+
+        .member-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 6px;
+        }
+
+        .member-row-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .member-mini-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        /* ================= MODAL OYNALAR ================= */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(4px);
+            z-index: 80;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 420px;
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.28);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 86vh;
+            overflow-y: auto;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .selectable-contact {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 12px;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            cursor: pointer;
+        }
+
+        /* ================= PLANSHEТ VA TELEFON UCHUN MOSLASHUV ================= */
+        @media (max-width: 900px) and (min-width: 769px) {
+            .app-container {
+                width: 98vw;
+                height: 96dvh;
+                border-radius: 20px;
+            }
+            .sidebar {
+                width: 300px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            html, body {
+                background: var(--bg-surface);
+            }
+
+            .app-container {
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+            }
+
+            .chat-main {
+                position: absolute;
+                inset: 0;
+                z-index: 20;
+                background: var(--bg-chat);
+                transform: translateX(100%);
+                transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+            }
+
+            .app-container.mobile-chat-open .chat-main {
+                transform: translateX(0);
+            }
+
+            .back-mobile-btn {
+                display: flex;
+            }
+
+            .messages-container {
+                padding: 14px 12px;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .profile-panel {
+                width: 100%;
+                border-left: none;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .icon-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 15px;
+            }
+            .send-btn, .record-btn {
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+            }
+            .avatar, .saved-icon-avatar {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ================= 1. RO'YXATDAN O'TISH EKRANI ================= -->
+<div class="auth-screen" id="authScreen">
+    <div class="auth-card">
+        <div class="auth-logo"><i class="fas fa-paper-plane"></i></div>
+        <h2>UzGram ga xush kelibsiz</h2>
+        <p>Davom etish uchun o‘z profilingizni yarating</p>
+
+        <div class="auth-avatar-pick" onclick="document.getElementById('authAvatarInput').click()">
+            <img id="authPreviewAvatar" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Avatar">
+            <div class="auth-avatar-badge"><i class="fas fa-camera"></i></div>
+        </div>
+        <input type="file" id="authAvatarInput" accept="image/*" style="display: none;" onchange="handleAuthAvatar(event)">
+
+        <div class="profile-field">
+            <label>Ism va familiyangiz *</label>
+            <input type="text" id="regName" placeholder="Masalan: Jasurbek">
+        </div>
+
+        <div class="profile-field">
+            <label>Telefon raqamingiz *</label>
+            <input type="tel" id="regPhone" placeholder="+998 90 123 45 67">
+        </div>
+
+        <div class="profile-field">
+            <label>Foydalanuvchi nomi (Username)</label>
+            <input type="text" id="regUsername" placeholder="@username">
+        </div>
+
+        <button class="save-profile-btn" onclick="completeRegistration()">Kirish / Ro‘yxatdan o‘tish</button>
+    </div>
+</div>
+
+<!-- ================= 2. ASOSIY CHAT ILOVASI ================= -->
+<div class="app-container" id="appContainer">
+
+    <!-- YON MENYU (DRAWER) -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+    <nav class="tg-drawer" id="tgDrawer">
+        <div class="drawer-top">
+            <div class="drawer-top-row">
+                <img id="drawerAvatar" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Profil" class="drawer-avatar" onclick="closeDrawer(); openProfile('me');">
+                <button class="drawer-theme-btn" onclick="toggleTheme()" title="Tungi / Kunduzgi rejim">
+                    <i id="themeIcon" class="fas fa-moon"></i>
+                </button>
+            </div>
+            <div class="drawer-user-info">
+                <h3 id="drawerName">Foydalanuvchi</h3>
+                <p id="drawerPhone">+998 ...</p>
+            </div>
+        </div>
+
+        <div class="drawer-menu">
+            <div class="drawer-item" onclick="closeDrawer(); openProfile('me');">
+                <i class="fas fa-user-circle"></i>
+                <span>Mening profilim</span>
+            </div>
+            <div class="drawer-item" onclick="closeDrawer(); selectChat('saved_messages');">
+                <i class="fas fa-bookmark"></i>
+                <span>Saqlangan xabarlar</span>
+            </div>
+            <div class="drawer-item" onclick="closeDrawer(); openContactModal();">
+                <i class="fas fa-user-plus"></i>
+                <span>Yangi kontakt qo‘shish</span>
+            </div>
+            <div class="drawer-divider"></div>
+            <div class="drawer-item" onclick="closeDrawer(); openCreateModal('group');">
+                <i class="fas fa-users"></i>
+                <span>Yangi guruh ochish</span>
+            </div>
+            <div class="drawer-item" onclick="closeDrawer(); openCreateModal('channel');">
+                <i class="fas fa-bullhorn"></i>
+                <span>Yangi kanal ochish</span>
+            </div>
+            <div class="drawer-divider"></div>
+            <div class="drawer-item" onclick="toggleTheme()">
+                <i class="fas fa-adjust"></i>
+                <span>Tungi rejim</span>
+            </div>
+            <div class="drawer-item" onclick="logoutAccount()">
+                <i class="fas fa-sign-out-alt" style="color: #ef4444;"></i>
+                <span style="color: #ef4444;">Hisobdan chiqish</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CHAP PANEL -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <button class="icon-btn" onclick="openDrawer()" title="Menyu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="search-wrap">
+                <i class="fas fa-search" style="color: var(--text-secondary); font-size: 14px;"></i>
+                <input type="text" id="searchInput" placeholder="Qidirish..." oninput="renderChatList()">
+            </div>
+            <button class="icon-btn" onclick="openContactModal()" title="Yangi kontakt qo‘shish">
+                <i class="fas fa-user-plus"></i>
+            </button>
+        </div>
+        <div class="chat-list" id="chatList"></div>
+    </aside>
+
+    <!-- ASOSIY CHAT OYNASI -->
+    <section class="chat-main">
+        <header class="chat-header">
+            <div class="header-left">
+                <button class="icon-btn back-mobile-btn" onclick="closeMobileChat()" title="Orqaga">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="chat-user-details" onclick="openProfile('peer')">
+                    <div class="avatar-wrapper" id="activeAvatarWrapper">
+                        <img id="activeChatAvatar" src="" alt="Chat" class="avatar">
+                        <span class="online-dot" id="activeOnlineDot"></span>
+                    </div>
+                    <div style="min-width: 0;">
+                        <div id="activeChatName" style="font-weight: 600; font-size: 15.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                        <div id="activeChatStatus" class="user-status"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 2px; flex-shrink: 0;">
+                <button class="icon-btn" id="addMemberHeaderBtn" style="display: none;" onclick="openAddMemberModal()" title="Guruh/Kanalga odam qo‘shish">
+                    <i class="fas fa-user-plus"></i>
+                </button>
+                <button class="icon-btn" onclick="document.getElementById('mediaInput').click()" title="Video / Rasm yuborish">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button class="icon-btn" onclick="openProfile('peer')" title="Ma'lumot">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="messages-container" id="messagesContainer"></main>
+
+        <!-- YASHIRIN FAYL KIRITISH -->
+        <input type="file" id="mediaInput" accept="video/*,image/*" style="display: none;" onchange="handleMediaUpload(event)">
+        <input type="file" id="avatarUploadInput" accept="image/*" style="display: none;" onchange="handleAvatarFile(event)">
+
+        <!-- XABAR YOZISH PANELI -->
+        <footer class="chat-input-area">
+            <button class="icon-btn" onclick="document.getElementById('mediaInput').click()" title="Video yoki rasm biriktirish">
+                <i class="fas fa-paperclip"></i>
+            </button>
+
+            <div class="input-wrapper" id="textInputWrapper">
+                <input type="text" id="messageInput" placeholder="Xabar yozing..." onkeypress="handleKeyPress(event)">
+            </div>
+
+            <div class="recording-indicator" id="recordingIndicator">
+                <i class="fas fa-circle"></i>
+                <span id="recordTimer">00:00</span> — Ovoz yozilmoqda...
+            </div>
+
+            <button class="record-btn" id="recordBtn" onclick="toggleVoiceRecording()" title="Ovozli xabar yozish">
+                <i class="fas fa-microphone"></i>
+            </button>
+
+            <button class="send-btn" onclick="sendTextMessage()" title="Yuborish">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </footer>
+    </section>
+
+    <!-- PROFIL PANELI -->
+    <aside class="profile-panel" id="profilePanel">
+        <div class="profile-header">
+            <button class="icon-btn" onclick="closeProfile()"><i class="fas fa-arrow-left"></i></button>
+            <span id="profilePanelTitle">Profil</span>
+        </div>
+        <div class="profile-body" id="profileBody"></div>
+    </aside>
+
+    <!-- MODAL 1: YANGI KONTAKT QO'SHISH -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span>Yangi kontakt qo‘shish</span>
+                <button class="icon-btn" onclick="closeModal('contactModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="profile-field">
+                <label>Ism va familiya *</label>
+                <input type="text" id="newContactName" placeholder="Masalan: Zarina yoki Sardor">
+            </div>
+            <div class="profile-field">
+                <label>Telefon raqam *</label>
+                <input type="tel" id="newContactPhone" placeholder="+998 90 ...">
+            </div>
+            <div class="profile-field">
+                <label>Username (ixtiyoriy)</label>
+                <input type="text" id="newContactUser" placeholder="@username">
+            </div>
+            <button class="save-profile-btn" onclick="addNewContact()">Kontaktni saqlash</button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: YANGI GURUH / KANAL OCHISH -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span id="modalTitle">Yangi guruh ochish</span>
+                <button class="icon-btn" onclick="closeModal('createModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="profile-field">
+                <label id="modalNameLabel">Guruh nomi *</label>
+                <input type="text" id="newChatTitle" placeholder="Nomini kiriting...">
+            </div>
+            <div class="profile-field">
+                <label>Tavsif (ixtiyoriy)</label>
+                <input type="text" id="newChatBio" placeholder="Qisqacha ma'lumot...">
+            </div>
+            <button class="save-profile-btn" onclick="createNewChat()">Yaratish</button>
+        </div>
+    </div>
+
+    <!-- MODAL 3: GURUH / KANALGA ODAM QO'SHISH -->
+    <div class="modal-overlay" id="addMemberModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span id="addMemberModalTitle">Odam qo‘shish</span>
+                <button class="icon-btn" onclick="closeModal('addMemberModal')"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div style="font-size: 13px; color: var(--text-secondary);">Kontaktlardan tanlang yoki yangi ism kiriting:</div>
+
+            <div id="contactsToPickList" style="display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;"></div>
+
+            <div class="drawer-divider"></div>
+
+            <div class="profile-field">
+                <label>Yangi odam ismi</label>
+                <input type="text" id="manualMemberName" placeholder="Ism kiriting...">
+            </div>
+            <div class="profile-field">
+                <label>Telefon raqami (ixtiyoriy)</label>
+                <input type="tel" id="manualMemberPhone" placeholder="+998 ...">
+            </div>
+            <button class="save-profile-btn" onclick="addManualMember()">
+                <i class="fas fa-user-plus"></i> Qo‘shish
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const MALE_AVATAR = "https://cdn-icons-png.flaticon.com/512/4140/4140037.png";
+    const FEMALE_AVATAR = "https://cdn-icons-png.flaticon.com/512/4140/4140047.png";
+    const DEFAULT_USER_AVATAR = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+
+    const FEMALE_FIRST_NAMES = new Set([
+        "madina", "zarina", "dilnoza", "malika", "aziza", "sevara", "rayhona", "farangiz",
+        "jasmina", "kamola", "zilola", "shahnoza", "nigora", "muxlisa", "oysha", "oyisha",
+        "nodira", "sabina", "ruxsora", "laylo", "gulnoza", "mohira", "feruza", "iroda",
+        "muslima", "fotima", "zuhra", "munisa", "diyora", "saodat", "shaxlo", "shahlo",
+        "komila", "lola", "zulfiya", "barno", "durdona", "gulbahor", "mavjuda", "umida",
+        "xonzoda", "muborak", "asilaxon", "asolat", "hilola", "maftuna", "mahliyo", "marjona",
+        "nazokat", "parizoda", "robia", "sadoqat", "shirin", "surayyo", "tanzila", "xurshida",
+        "yulduz", "ziyoda", "mavluda", "gulchehra", "nilufar", "nafisa",
+        "bahora", "dildora", "sanam", "sitora", "kamolaxon", "madinaxon", "zarinaxon"
+    ]);
+
+    const MALE_EXCEPTIONS = new Set([
+        "mustafo", "bekzod", "abbos", "ulugbek", "ulug'bek", "javohir", "sardor", "jasur",
+        "jasurbek", "doniyor", "bobur", "temur", "rustam", "farhod", "farrux", "azamat",
+        "shavkat", "mirzo", "abdulla", "ziyodulla", "xurshid", "komil", "akmal", "anvar",
+        "alisher", "sanjarr", "sanjor", "behruz", "doston", "islom", "ibrohimm", "ibrohim",
+        "umid", "umidjon", "shoxruh", "shohrux", "elbek", "ilhom", "jamshid", "nodir", "nodirbek"
+    ]);
+
+    function detectGenderByName(fullName) {
+        if (!fullName) return "male";
+        const cleaned = fullName
+            .toLowerCase()
+            .replace(/['’`]/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        const parts = cleaned.split(" ");
+        for (const word of parts) {
+            if (!word) continue;
+            if (FEMALE_FIRST_NAMES.has(word)) return "female";
+            if (word.endsWith("xon") || word.endsWith("oy") || word.endsWith("bika") || word.endsWith("niso") || word.endsWith("bonu")) {
+                return "female";
+            }
+        }
+
+        const firstWord = parts[0] || "";
+        if (MALE_EXCEPTIONS.has(firstWord)) return "male";
+
+        if (firstWord.endsWith("a") && !firstWord.endsWith("beka") && !firstWord.endsWith("xoja")) {
+            return "female";
+        }
+
+        return "male";
+    }
+
+    function getAvatarByName(name, fallback = MALE_AVATAR) {
+        if (!name) return fallback;
+        return detectGenderByName(name) === "female" ? FEMALE_AVATAR : MALE_AVATAR;
+    }
+
+    let authCustomAvatar = null;
+    let myProfile = JSON.parse(localStorage.getItem("uzgram_v5_profile")) || null;
+
+    let chats = JSON.parse(localStorage.getItem("uzgram_v5_chats")) || [
+        {
+            id: "saved_messages",
+            type: "saved",
+            name: "Saqlangan xabarlar",
+            status: "shaxsiy bulut xotirasi",
+            bio: "Muhim xabarlar, video va ovozli eslatmalar uchun shaxsiy bo‘lim.",
+            members: [],
+            messages: [
+                { type: "text", sender: "out", text: "Bu yerga muhim xabarlar, video va ovozli eslatmalaringizni saqlab qo‘yishingiz mumkin 📌", time: getCurrentTime() }
+            ]
+        }
+    ];
+
+    let activeChatId = chats[0].id;
+    let createMode = "group";
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+    let recordInterval = null;
+    let recordSeconds = 0;
+
+    function isMobileViewport() {
+        return window.innerWidth <= 768;
+    }
+
+    function syncLayoutToViewport() {
+        const appEl = document.getElementById("appContainer");
+        if (!isMobileViewport()) {
+            appEl.classList.remove("mobile-chat-open");
+        }
+    }
+
+    window.addEventListener("resize", syncLayoutToViewport);
+
+    function checkAuth() {
+        if (myProfile && myProfile.name) {
+            document.getElementById("authScreen").style.display = "none";
+            document.getElementById("appContainer").style.display = "flex";
+            updateDrawerUI();
+            selectChat(activeChatId, { openMobile: false });
+        } else {
+            document.getElementById("authScreen").style.display = "flex";
+            document.getElementById("appContainer").style.display = "none";
+        }
+    }
+
+    function handleAuthAvatar(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            authCustomAvatar = e.target.result;
+            document.getElementById("authPreviewAvatar").src = authCustomAvatar;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function completeRegistration() {
+        const name = document.getElementById("regName").value.trim();
+        const phone = document.getElementById("regPhone").value.trim();
+        const username = document.getElementById("regUsername").value.trim();
+
+        if (!name || !phone) {
+            alert("Iltimos, ismingiz va telefon raqamingizni kiriting!");
+            return;
+        }
+
+        myProfile = {
+            name: name,
+            phone: phone,
+            username: username || "@" + name.toLowerCase().replace(/\s+/g, "_"),
+            bio: "",
+            avatar: authCustomAvatar || DEFAULT_USER_AVATAR
+        };
+
+        saveToStorage();
+        checkAuth();
+    }
+
+    function logoutAccount() {
+        if (confirm("Hisobdan chiqmoqchimisiz?")) {
+            localStorage.removeItem("uzgram_v5_profile");
+            myProfile = null;
+            authCustomAvatar = null;
+            document.getElementById("authPreviewAvatar").src = DEFAULT_USER_AVATAR;
+            closeDrawer();
+            checkAuth();
+        }
+    }
+
+    function saveToStorage() {
+        if (myProfile) {
+            localStorage.setItem("uzgram_v5_profile", JSON.stringify(myProfile));
+        }
+        const safeChats = chats.map(c => ({
+            ...c,
+            messages: c.messages.filter(m => m.type === "text" || m.type === "system")
+        }));
+        localStorage.setItem("uzgram_v5_chats", JSON.stringify(safeChats));
+    }
+
+    function updateDrawerUI() {
+        if (!myProfile) return;
+        document.getElementById("drawerName").innerText = myProfile.name;
+        document.getElementById("drawerPhone").innerText = myProfile.phone;
+        document.getElementById("drawerAvatar").src = myProfile.avatar || DEFAULT_USER_AVATAR;
+    }
+
+    function openDrawer() {
+        document.getElementById("tgDrawer").classList.add("open");
+        document.getElementById("drawerOverlay").classList.add("open");
+    }
+
+    function closeDrawer() {
+        document.getElementById("tgDrawer").classList.remove("open");
+        document.getElementById("drawerOverlay").classList.remove("open");
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove("open");
+    }
+
+    function openContactModal() {
+        document.getElementById("newContactName").value = "";
+        document.getElementById("newContactPhone").value = "";
+        document.getElementById("newContactUser").value = "";
+        document.getElementById("contactModal").classList.add("open");
+    }
+
+    function addNewContact() {
+        const name = document.getElementById("newContactName").value.trim();
+        const phone = document.getElementById("newContactPhone").value.trim();
+        const username = document.getElementById("newContactUser").value.trim();
+
+        if (!name || !phone) {
+            alert("Kontakt ismi va telefon raqamini kiriting!");
+            return;
+        }
+
+        const gender = detectGenderByName(name);
+        const chosenAvatar = getAvatarByName(name);
+
+        const newContact = {
+            id: "contact_" + Date.now(),
+            type: "private",
+            gender: gender,
+            name: name,
+            phone: phone,
+            username: username,
+            status: "onlayn",
+            bio: (gender === "female" ? "Qiz bola • " : "O‘g‘il bola • ") + "Tel: " + phone,
+            avatar: chosenAvatar,
+            messages: [
+                { type: "system", text: `${name} kontaktlarga qo‘shildi`, time: getCurrentTime() }
+            ]
+        };
+
+        chats.splice(1, 0, newContact);
+        saveToStorage();
+        closeModal("contactModal");
+        selectChat(newContact.id, { openMobile: true });
+    }
+
+    function openCreateModal(type) {
+        createMode = type;
+        document.getElementById("modalTitle").innerText = type === "group" ? "Yangi guruh ochish" : "Yangi kanal ochish";
+        document.getElementById("modalNameLabel").innerText = type === "group" ? "Guruh nomi *" : "Kanal nomi *";
+        document.getElementById("newChatTitle").value = "";
+        document.getElementById("newChatBio").value = "";
+        document.getElementById("createModal").classList.add("open");
+    }
+
+    function createNewChat() {
+        const title = document.getElementById("newChatTitle").value.trim();
+        const bio = document.getElementById("newChatBio").value.trim();
+        if (!title) {
+            alert("Nomini kiriting!");
+            return;
+        }
+
+        const isGroup = createMode === "group";
+        const newChat = {
+            id: "chat_" + Date.now(),
+            type: createMode,
+            name: title,
+            status: isGroup ? "1 ta a'zo" : "1 ta obunachi",
+            bio: bio || (isGroup ? "Yangi guruh" : "Yangi kanal"),
+            avatar: isGroup
+                ? "https://cdn-icons-png.flaticon.com/512/166/166258.png"
+                : "https://cdn-icons-png.flaticon.com/512/1998/1998087.png",
+            members: [
+                { name: myProfile.name + " (Siz)", phone: myProfile.phone, avatar: myProfile.avatar }
+            ],
+            messages: [
+                {
+                    type: "system",
+                    text: isGroup ? `«${title}» guruhi yaratildi` : `«${title}» kanali ochildi`,
+                    time: getCurrentTime()
+                }
+            ]
+        };
+
+        chats.splice(1, 0, newChat);
+        saveToStorage();
+        closeModal("createModal");
+        selectChat(newChat.id, { openMobile: true });
+    }
+
+    function openAddMemberModal() {
+        const chat = chats.find(c => c.id === activeChatId);
+        if (!chat || (chat.type !== "group" && chat.type !== "channel")) return;
+
+        document.getElementById("addMemberModalTitle").innerText =
+            chat.type === "group" ? "Guruhga a'zo qo‘shish" : "Kanalga obunachi qo‘shish";
+
+        document.getElementById("manualMemberName").value = "";
+        document.getElementById("manualMemberPhone").value = "";
+
+        const pickList = document.getElementById("contactsToPickList");
+        pickList.innerHTML = "";
+
+        const contacts = chats.filter(c => c.type === "private");
+        if (contacts.length === 0) {
+            pickList.innerHTML = `<div style="font-size:13px; color:var(--text-secondary); padding:6px;">Hozircha kontaktlar yo‘q. Pastdan ism kiritib qo‘shishingiz mumkin.</div>`;
+        } else {
+            contacts.forEach(contact => {
+                const alreadyAdded = chat.members.some(m => m.name === contact.name);
+                const cAvatar = contact.avatar || getAvatarByName(contact.name);
+                const row = document.createElement("div");
+                row.className = "selectable-contact";
+                row.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+                        <img src="${cAvatar}" class="member-mini-avatar" alt="">
+                        <div style="min-width:0;">
+                            <div style="font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(contact.name)}</div>
+                            <div style="font-size:12px; color:var(--text-secondary);">${escapeHTML(contact.phone || "")}</div>
+                        </div>
+                    </div>
+                    <button class="change-photo-btn" ${alreadyAdded ? "disabled" : ""}>
+                        ${alreadyAdded ? "Qo‘shilgan ✓" : "+ Qo‘shish"}
+                    </button>
+                `;
+                if (!alreadyAdded) {
+                    row.onclick = () => {
+                        pushMemberToChat(chat, contact.name, contact.phone, cAvatar);
+                        openAddMemberModal();
+                    };
+                }
+                pickList.appendChild(row);
+            });
+        }
+
+        document.getElementById("addMemberModal").classList.add("open");
+    }
+
+    function addManualMember() {
+        const name = document.getElementById("manualMemberName").value.trim();
+        const phone = document.getElementById("manualMemberPhone").value.trim();
+        if (!name) {
+            alert("Odam ismini kiriting!");
+            return;
+        }
+
+        const avatar = getAvatarByName(name);
+        const chat = chats.find(c => c.id === activeChatId);
+        pushMemberToChat(chat, name, phone, avatar);
+        closeModal("addMemberModal");
+    }
+
+    function pushMemberToChat(chat, memberName, memberPhone, memberAvatar) {
+        chat.members.push({ name: memberName, phone: memberPhone, avatar: memberAvatar });
+        const count = chat.members.length;
+        chat.status = chat.type === "group" ? `${count} ta a'zo` : `${count} ta obunachi`;
+
+        chat.messages.push({
+            type: "system",
+            text: `${myProfile.name} «${memberName}»ni ${chat.type === "group" ? "guruhga" : "kanalga"} qo‘shdi`,
+            time: getCurrentTime()
+        });
+
+        saveToStorage();
+        document.getElementById("activeChatStatus").innerText = chat.status;
+        renderMessages();
+        renderChatList();
+        if (document.getElementById("profilePanel").classList.contains("open")) {
+            openProfile("peer");
+        }
+    }
+
+    function renderChatList() {
+        const listEl = document.getElementById("chatList");
+        const query = document.getElementById("searchInput").value.toLowerCase();
+        listEl.innerHTML = "";
+
+        chats
+            .filter(c => c.name.toLowerCase().includes(query))
+            .forEach(chat => {
+                const lastMsg = chat.messages[chat.messages.length - 1];
+                let preview = "Xabarlar yo‘q";
+                if (lastMsg) {
+                    if (lastMsg.type === "text" || lastMsg.type === "system") preview = lastMsg.text;
+                    else if (lastMsg.type === "video") preview = "🎥 Video xabar";
+                    else if (lastMsg.type === "image") preview = "🖼️ Rasm";
+                    else if (lastMsg.type === "audio") preview = "🎤 Ovozli xabar";
+                }
+
+                const displayAvatar = chat.type === "private"
+                    ? getAvatarByName(chat.name, chat.avatar)
+                    : chat.avatar;
+
+                let avatarHtml = `<img src="${displayAvatar}" class="avatar" alt="${chat.name}">`;
+                if (chat.type === "saved") {
+                    avatarHtml = `<div class="saved-icon-avatar"><i class="fas fa-bookmark"></i></div>`;
+                }
+
+                let typeIcon = "";
+                if (chat.type === "group") typeIcon = '<i class="fas fa-users" style="font-size:12px; color:var(--accent);"></i>';
+                if (chat.type === "channel") typeIcon = '<i class="fas fa-bullhorn" style="font-size:12px; color:var(--accent);"></i>';
+
+                const div = document.createElement("div");
+                div.className = `chat-item ${chat.id === activeChatId ? "active" : ""}`;
+                div.onclick = () => selectChat(chat.id, { openMobile: true });
+                div.innerHTML = `
+                    <div class="avatar-wrapper">${avatarHtml}</div>
+                    <div class="chat-info">
+                        <div class="chat-top">
+                            <span class="chat-name">${typeIcon} ${escapeHTML(chat.name)}</span>
+                            <span class="chat-time">${lastMsg ? lastMsg.time : ""}</span>
+                        </div>
+                        <div class="chat-preview">${escapeHTML(preview)}</div>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+    }
+
+    function selectChat(chatId, options = { openMobile: true }) {
+        activeChatId = chatId;
+        const chat = chats.find(c => c.id === chatId);
+        if (!chat) return;
+
+        document.getElementById("activeChatName").innerText = chat.name;
+        document.getElementById("activeChatStatus").innerText = chat.status;
+
+        const avatarWrapper = document.getElementById("activeAvatarWrapper");
+        if (chat.type === "saved") {
+            avatarWrapper.innerHTML = `<div class="saved-icon-avatar"><i class="fas fa-bookmark"></i></div>`;
+        } else {
+            const displayAvatar = chat.type === "private"
+                ? getAvatarByName(chat.name, chat.avatar)
+                : chat.avatar;
+            avatarWrapper.innerHTML = `
+                <img src="${displayAvatar}" alt="Chat" class="avatar">
+                ${chat.type === "private" ? '<span class="online-dot"></span>' : ''}
+            `;
+        }
+
+        const addMemberBtn = document.getElementById("addMemberHeaderBtn");
+        addMemberBtn.style.display = (chat.type === "group" || chat.type === "channel") ? "flex" : "none";
+
+        const inputEl = document.getElementById("messageInput");
+        if (chat.type === "channel") inputEl.placeholder = "Kanalga post joylash...";
+        else if (chat.type === "saved") inputEl.placeholder = "O‘zingiz uchun eslatma yozing...";
+        else inputEl.placeholder = "Xabar yozing...";
+
+        if (options.openMobile && isMobileViewport()) {
+            document.getElementById("appContainer").classList.add("mobile-chat-open");
+        }
+
+        closeProfile();
+        renderChatList();
+        renderMessages();
+    }
+
+    function closeMobileChat() {
+        document.getElementById("appContainer").classList.remove("mobile-chat-open");
+    }
+
+    function renderMessages() {
+        const container = document.getElementById("messagesContainer");
+        const chat = chats.find(c => c.id === activeChatId);
+        container.innerHTML = "";
+        if (!chat) return;
+
+        chat.messages.forEach(msg => {
+            const div = document.createElement("div");
+
+            if (msg.type === "system") {
+                div.className = "message system-notice";
+                div.innerText = msg.text;
+                container.appendChild(div);
+                return;
+            }
+
+            if (chat.type === "channel") {
+                div.className = "message channel-post";
+            } else {
+                div.className = `message ${msg.sender === "out" ? "outgoing" : "incoming"}`;
+            }
+
+            let authorHtml = "";
+            if (chat.type === "group" && msg.sender === "out") {
+                authorHtml = `<div class="sender-label">${escapeHTML(myProfile.name)}</div>`;
+            } else if (chat.type === "channel") {
+                authorHtml = `<div class="sender-label">${escapeHTML(chat.name)}</div>`;
+            }
+
+            let content = "";
+            if (msg.type === "text") {
+                content = `<div>${escapeHTML(msg.text)}</div>`;
+            } else if (msg.type === "video") {
+                content = `<video src="${msg.url}" controls playsinline></video>`;
+            } else if (msg.type === "image") {
+                content = `<img src="${msg.url}" alt="Rasm">`;
+            } else if (msg.type === "audio") {
+                content = `<audio src="${msg.url}" controls></audio>`;
+            }
+
+            const viewsHtml = chat.type === "channel" ? `<span><i class="fas fa-eye"></i> ${chat.members.length || 1}</span>` : "";
+            const checkIcon = (msg.sender === "out" && chat.type !== "channel") ? '<i class="fas fa-check-double" style="color:#a7f3d0;"></i>' : '';
+
+            div.innerHTML = `
+                ${authorHtml}
+                ${content}
+                <div class="msg-meta">
+                    ${viewsHtml}
+                    <span>${msg.time}</span>
+                    ${checkIcon}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function getCurrentTime() {
+        const now = new Date();
+        return now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    }
+
+    function sendTextMessage() {
+        const input = document.getElementById("messageInput");
+        const text = input.value.trim();
+        if (!text) return;
+
+        const chat = chats.find(c => c.id === activeChatId);
+        chat.messages.push({
+            type: "text",
+            sender: "out",
+            text: text,
+            time: getCurrentTime()
+        });
+
+        input.value = "";
+        saveToStorage();
+        renderMessages();
+        renderChatList();
+
+        if (chat.type === "private") simulateSmartReply(chat, text);
+    }
+
+    function handleKeyPress(e) {
+        if (e.key === "Enter") sendTextMessage();
+    }
+
+    function handleMediaUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const fileURL = URL.createObjectURL(file);
+        const isVideo = file.type.startsWith("video/");
+        const chat = chats.find(c => c.id === activeChatId);
+
+        chat.messages.push({
+            type: isVideo ? "video" : "image",
+            sender: "out",
+            url: fileURL,
+            time: getCurrentTime()
+        });
+
+        event.target.value = "";
+        renderMessages();
+        renderChatList();
+
+        if (chat.type === "private") {
+            simulateSmartReply(chat, "", isVideo ? "video" : "image");
+        }
+    }
+
+    async function toggleVoiceRecording() {
+        const recordBtn = document.getElementById("recordBtn");
+        const textWrapper = document.getElementById("textInputWrapper");
+        const indicator = document.getElementById("recordingIndicator");
+        const timerEl = document.getElementById("recordTimer");
+
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = e => {
+                    if (e.data.size > 0) audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const chat = chats.find(c => c.id === activeChatId);
+
+                    chat.messages.push({
+                        type: "audio",
+                        sender: "out",
+                        url: audioUrl,
+                        time: getCurrentTime()
+                    });
+
+                    renderMessages();
+                    renderChatList();
+                    if (chat.type === "private") simulateSmartReply(chat, "", "audio");
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordBtn.classList.add("recording");
+                recordBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                textWrapper.style.display = "none";
+                indicator.style.display = "flex";
+
+                recordSeconds = 0;
+                timerEl.innerText = "00:00";
+                recordInterval = setInterval(() => {
+                    recordSeconds++;
+                    const mins = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
+                    const secs = String(recordSeconds % 60).padStart(2, '0');
+                    timerEl.innerText = `${mins}:${secs}`;
+                }, 1000);
+
+            } catch (err) {
+                alert("Mikrofonga ruxsat berilmadi.");
+            }
+        } else {
+            mediaRecorder.stop();
+            isRecording = false;
+            clearInterval(recordInterval);
+            recordBtn.classList.remove("recording");
+            recordBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            textWrapper.style.display = "flex";
+            indicator.style.display = "none";
+        }
+    }
+
+    function generateSmartReplyText(userText, mediaType, chatName) {
+        const lower = (userText || "").toLowerCase();
+
+        if (mediaType === "video") {
+            const vReplies = ["Zo‘r video ekan 🎬", "Videoni ko‘rdim, rahmat!", "Qiziqarli kadrlar ekan 😊"];
+            return vReplies[Math.floor(Math.random() * vReplies.length)];
+        }
+        if (mediaType === "image") {
+            const iReplies = ["Chiroyli rasm ekan ✨", "Rasm uchun rahmat!", "Zo‘r chiqibdi 👍"];
+            return iReplies[Math.floor(Math.random() * iReplies.length)];
+        }
+        if (mediaType === "audio") {
+            const aReplies = ["Ovozingizni eshitdim, tushunarli 🎧", "Ovozli xabar uchun rahmat!", "Hozir javob yozaman 🎤"];
+            return aReplies[Math.floor(Math.random() * aReplies.length)];
+        }
+
+        if (lower.includes("salom") || lower.includes("assalom")) {
+            return `Vaalaykum assalom! Qalaysiz, ${chatName} shu yerda 😊`;
+        }
+        if (lower.includes("qalay") || lower.includes("ishlar") || lower.includes("nima gap")) {
+            return "Yaxshi, rahmat! Sizda nima gaplar, ishlar qanday ketyapti?";
+        }
+        if (lower.includes("rahmat") || lower.includes("spasibo")) {
+            return "Arzimaydi! Yana biror narsa kerak bo‘lsa yozing 😊";
+        }
+        if (lower.includes("qayerda") || lower.includes("qachon")) {
+            return "Birozdan keyin batafsil gaplashamiz, hozir bandroq edim 👍";
+        }
+        if (lower.includes("xo‘p") || lower.includes("xop") || lower.includes("mayli") || lower.includes("ok")) {
+            return "Kelishdik! Unda xabarlashamiz 🙌";
+        }
+        if (lower.includes("?")) {
+            return "Qiziq savol bo‘ldi! Menimcha, buni birgalikda hal qilsak bo‘ladi.";
+        }
+
+        const generalReplies = [
+            `«${userText}» — juda qiziq fikr ekan!`,
+            "Tushundim, hozir buni ko‘rib chiqaman 👍",
+            "Ha, to‘g‘ri aytasiz, men ham shunday o‘ylayman.",
+            "Ajoyib! Keyin yana batafsil gaplashamiz 😊",
+            "Xabaringizni oldim, rahmat sizga!",
+            "Buni albatta hisobga olaman 🙌"
+        ];
+        return generalReplies[Math.floor(Math.random() * generalReplies.length)];
+    }
+
+    function simulateSmartReply(chat, userText = "", mediaType = null) {
+        const statusEl = document.getElementById("activeChatStatus");
+        const oldStatus = chat.status;
+        if (chat.id === activeChatId) statusEl.innerText = "yozmoqda...";
+
+        const delay = 800 + Math.floor(Math.random() * 1100);
+        setTimeout(() => {
+            const replyText = generateSmartReplyText(userText, mediaType, chat.name);
+            chat.messages.push({
+                type: "text",
+                sender: "in",
+                text: replyText,
+                time: getCurrentTime()
+            });
+            saveToStorage();
+            if (chat.id === activeChatId) {
+                statusEl.innerText = oldStatus;
+                renderMessages();
+            }
+            renderChatList();
+        }, delay);
+    }
+
+    function openProfile(type) {
+        const panel = document.getElementById("profilePanel");
+        const body = document.getElementById("profileBody");
+        const title = document.getElementById("profilePanelTitle");
+        panel.classList.add("open");
+
+        if (type === "me") {
+            title.innerText = "Mening profilim";
+            body.innerHTML = `
+                <img src="${myProfile.avatar}" class="profile-large-img" id="profilePreviewImg">
+                <button class="change-photo-btn" onclick="document.getElementById('avatarUploadInput').click()">
+                    <i class="fas fa-camera"></i> Rasmni o‘zgartirish
+                </button>
+                <div class="profile-field">
+                    <label>Ism va familiyangiz</label>
+                    <input type="text" id="editMyName" value="${escapeHTML(myProfile.name)}">
+                </div>
+                <div class="profile-field">
+                    <label>Username</label>
+                    <input type="text" id="editMyUsername" value="${escapeHTML(myProfile.username)}">
+                </div>
+                <div class="profile-field">
+                    <label>Bio</label>
+                    <input type="text" id="editMyBio" value="${escapeHTML(myProfile.bio)}" placeholder="O'zingiz haqingizda...">
+                </div>
+                <div class="profile-field">
+                    <label>Telefon raqam</label>
+                    <input type="text" id="editMyPhone" value="${escapeHTML(myProfile.phone)}">
+                </div>
+                <button class="save-profile-btn" onclick="saveMyProfile()">Saqlash</button>
+            `;
+        } else {
+            const chat = chats.find(c => c.id === activeChatId);
+            const isGroupOrChannel = chat.type === "group" || chat.type === "channel";
+            title.innerText = chat.type === "channel" ? "Kanal ma'lumoti" : (chat.type === "group" ? "Guruh ma'lumoti" : "Ma'lumot");
+
+            let membersHtml = "";
+            if (isGroupOrChannel) {
+                const listItems = chat.members.map(m => `
+                    <div class="member-row">
+                        <div class="member-row-left">
+                            <img src="${m.avatar || getAvatarByName(m.name)}" class="member-mini-avatar" alt="">
+                            <div style="min-width:0;">
+                                <div style="font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(m.name)}</div>
+                                <div style="font-size:11.5px; color:var(--text-secondary);">${escapeHTML(m.phone || "A'zo")}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join("");
+
+                membersHtml = `
+                    <button class="save-profile-btn" onclick="openAddMemberModal()">
+                        <i class="fas fa-user-plus"></i> ${chat.type === "group" ? "Guruhga odam qo‘shish" : "Kanalga odam qo‘shish"}
+                    </button>
+                    <div class="members-section">
+                        <div class="members-header">
+                            <span>${chat.type === "group" ? "Guruh a'zolari" : "Obunachilar"} (${chat.members.length})</span>
+                        </div>
+                        ${listItems}
+                    </div>
+                `;
+            }
+
+            const topAvatar = chat.type === "saved"
+                ? `<div class="saved-icon-avatar" style="width:92px; height:92px; font-size:34px;"><i class="fas fa-bookmark"></i></div>`
+                : `<img src="${chat.type === 'private' ? getAvatarByName(chat.name, chat.avatar) : chat.avatar}" class="profile-large-img">`;
+
+            body.innerHTML = `
+                ${topAvatar}
+                <h3 style="text-align:center;">${escapeHTML(chat.name)}</h3>
+                <span style="color: var(--accent); font-size: 13px; font-weight:500;">${escapeHTML(chat.status)}</span>
+                <div class="profile-field">
+                    <label>Ma'lumot</label>
+                    <div style="font-size:14px;">${escapeHTML(chat.bio)}</div>
+                </div>
+                ${membersHtml}
+            `;
+        }
+    }
+
+    function handleAvatarFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            myProfile.avatar = e.target.result;
+            document.getElementById("profilePreviewImg").src = e.target.result;
+            document.getElementById("drawerAvatar").src = e.target.result;
+            saveToStorage();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function saveMyProfile() {
+        const newName = document.getElementById("editMyName").value.trim();
+        if (newName) myProfile.name = newName;
+        myProfile.username = document.getElementById("editMyUsername").value.trim();
+        myProfile.bio = document.getElementById("editMyBio").value.trim();
+        myProfile.phone = document.getElementById("editMyPhone").value.trim();
+
+        saveToStorage();
+        updateDrawerUI();
+        closeProfile();
+    }
+
+    function closeProfile() {
+        document.getElementById("profilePanel").classList.remove("open");
+    }
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        const icon = document.getElementById("themeIcon");
+        if (html.getAttribute("data-theme") === "dark") {
+            html.removeAttribute("data-theme");
+            icon.className = "fas fa-moon";
+        } else {
+            html.setAttribute("data-theme", "dark");
+            icon.className = "fas fa-sun";
+        }
+    }
+
+    function escapeHTML(str) {
+        if (!str) return "";
+        return str.replace(/[&<>'"]/g, tag => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+        }[tag]));
+    }
+
+    checkAuth();
+</script>
+
+</body>
+</html>
+Displaying index_6.html.
